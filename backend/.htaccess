@@ -1,0 +1,21 @@
+Options -Indexes
+
+<FilesMatch "^(?:\.env|package(?:-lock)?\.json|server\.js|.*\.sql|README.*)$">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "^(?:seed_.*|migrate_.*|import_.*|consolidate_db)\.php$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Cache-Control "no-store"
+
+  # PDF perlu diizinkan tampil di viewer MatHeal. Endpoint backend lain tetap DENY.
+  <Files "material_file.php">
+    Header always unset X-Frame-Options
+    Header always set Content-Security-Policy "frame-ancestors 'self' http://localhost:* http://127.0.0.1:*"
+  </Files>
+</IfModule>

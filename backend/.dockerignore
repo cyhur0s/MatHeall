@@ -1,0 +1,7 @@
+node_modules
+.env
+*.log
+tests
+tools
+askmatheal.out.log
+askmatheal.err.log

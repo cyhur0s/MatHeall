@@ -369,7 +369,7 @@ app.get("/api/health", async (req, res) => {
 });
 
 const PORT = Number(process.env.PORT || 5000);
-const httpServer = app.listen(PORT, () => {
+const httpServer = app.listen(PORT, "0.0.0.0", () => {
   if (GEMINI_KEY && GEMINI_KEY !== "your_gemini_api_key_here") {
     console.log(`✅ AI Tutor berjalan di http://localhost:${PORT}`);
     console.log("   Provider: Google Gemini");

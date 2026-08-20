@@ -8767,7 +8767,7 @@ html, body { overflow-x: clip; }
 
 /* The landing navigation links are hidden on compact windows, so remove the
    obsolete second grid row that otherwise leaves a large empty mobile header. */
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   .lp-nav {
     height: 62px;
     min-height: 62px;
@@ -8777,10 +8777,104 @@ html, body { overflow-x: clip; }
     justify-content: space-between;
     gap: 12px;
   }
-  .lp-navlinks,
   .lp-nav-btns { display: none; }
   .lp-brand { min-height: 44px; }
   #home, #workflow, #features, #how, #demo, #contact { scroll-margin-top: 70px; }
+}
+
+.lp-mobile-toggle,
+.lp-mobile-login { display: none; }
+
+@media (max-width: 1024px) {
+  .lp-nav { position: sticky; overflow: visible; }
+  .lp-mobile-toggle {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0;
+    border: 1px solid #c9dcd5;
+    border-radius: 11px;
+    background: #fffefa;
+    box-shadow: 0 5px 14px rgba(31, 70, 65, .08);
+    cursor: pointer;
+  }
+  .lp-mobile-toggle span {
+    width: 19px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--mh-brand-strong, #215f6d);
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  .lp-mobile-toggle.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .lp-mobile-toggle.is-open span:nth-child(2) { opacity: 0; }
+  .lp-mobile-toggle.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .lp-nav .lp-navlinks {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 12px;
+    left: 12px;
+    z-index: 1;
+    display: flex;
+    width: auto;
+    max-height: min(70vh, 480px);
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 3px;
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid #d5e2dd;
+    border-radius: 14px;
+    background: rgba(255, 254, 250, .98);
+    box-shadow: 0 18px 42px rgba(24, 54, 51, .16);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(.985);
+    transform-origin: top;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    backdrop-filter: blur(16px);
+  }
+  .lp-nav .lp-navlinks.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .lp-nav .lp-navlinks a {
+    display: flex;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    align-items: center;
+    border-radius: 9px;
+    color: #344e48;
+    font-size: .875rem;
+    font-weight: 700;
+  }
+  .lp-nav .lp-navlinks a:hover,
+  .lp-nav .lp-navlinks a:focus-visible { background: #e9f2ee; color: #215f6d; }
+  .lp-nav .lp-navlinks a::after { display: none; }
+  .lp-mobile-login {
+    display: block;
+    min-height: 44px;
+    margin-top: 5px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--mh-brand, #2d7568);
+    color: #fff;
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
 }
 
 /* Short landscape windows remain scrollable without vertically centering and

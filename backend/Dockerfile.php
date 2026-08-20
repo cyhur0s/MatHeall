@@ -6,7 +6,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
-COPY . /var/www/html
+COPY backend/ /var/www/html/
+COPY frontend/Materi/ /var/www/Materi/
+
+RUN test -f /var/www/Materi/01_Limit.pdf
 
 EXPOSE 8080
 

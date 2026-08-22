@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { restoreUserProgress } from "./utils/userProgress";
 import { apiFetch } from "./config/api";
+import PasswordVisibilityButton from "./PasswordVisibilityButton";
 
 const MATH_FACTS = [
   { icon: "💡", fact: "Angka 0 bersifat netral: menambah atau mengurangi suatu bilangan dengan 0 tidak mengubah nilainya." },
@@ -24,7 +25,11 @@ function LoginPage() {
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState({
+    login: false,
+    register: false,
+    confirm: false,
+  });
   const [factIndex, setFactIndex] = useState(0);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotUsername, setForgotUsername] = useState("");
@@ -32,6 +37,10 @@ function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const togglePassword = (field) => {
+    setPasswordVisibility((current) => ({ ...current, [field]: !current[field] }));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -287,28 +296,22 @@ function LoginPage() {
                   required
                 />
 
-                <div style={{ position: "relative" }}>
+                <div className="password-field">
                   <label className="sr-only" htmlFor="login-password">Password</label>
                   <input
                     id="login-password"
                     name="password"
-                    type={showPassword ? "text" : "password"}
+                    type={passwordVisibility.login ? "text" : "password"}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                     required
-                    style={{ width: "100%" }}
                   />
-                  <button
-                    type="button"
-                    className="password-visibility-btn"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                    aria-pressed={showPassword}
-                  >
-                    {showPassword ? "🙈" : "👁️"}
-                  </button>
+                  <PasswordVisibilityButton
+                    visible={passwordVisibility.login}
+                    onToggle={() => togglePassword("login")}
+                  />
                 </div>
 
                 <button
@@ -338,44 +341,41 @@ function LoginPage() {
                   required
                 />
 
-                <div style={{ position: "relative" }}>
+                <div className="password-field">
                   <label className="sr-only" htmlFor="register-password">Password baru</label>
                   <input
                     id="register-password"
                     name="password"
-                    type={showPassword ? "text" : "password"}
+                    type={passwordVisibility.register ? "text" : "password"}
                     placeholder="Password (minimal 8 karakter)"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     autoComplete="new-password"
                     minLength={8}
                     required
-                    style={{ width: "100%" }}
                   />
-                  <button
-                    type="button"
-                    className="password-visibility-btn"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                    aria-pressed={showPassword}
-                  >
-                    {showPassword ? "🙈" : "👁️"}
-                  </button>
+                  <PasswordVisibilityButton
+                    visible={passwordVisibility.register}
+                    onToggle={() => togglePassword("register")}
+                  />
                 </div>
 
-                <div style={{ position: "relative" }}>
+                <div className="password-field">
                   <label className="sr-only" htmlFor="register-confirm-password">Konfirmasi password baru</label>
                   <input
                     id="register-confirm-password"
                     name="confirm-password"
-                    type={showPassword ? "text" : "password"}
+                    type={passwordVisibility.confirm ? "text" : "password"}
                     placeholder="Konfirmasi password"
                     value={regConfirm}
                     onChange={(e) => setRegConfirm(e.target.value)}
                     autoComplete="new-password"
                     minLength={8}
                     required
-                    style={{ width: "100%" }}
+                  />
+                  <PasswordVisibilityButton
+                    visible={passwordVisibility.confirm}
+                    onToggle={() => togglePassword("confirm")}
                   />
                 </div>
 

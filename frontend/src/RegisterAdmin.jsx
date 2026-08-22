@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "./config/api";
+import PasswordVisibilityButton from "./PasswordVisibilityButton";
 
 function RegisterAdmin() {
   const [inputKey, setInputKey] = useState("");
@@ -10,6 +11,7 @@ function RegisterAdmin() {
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -122,31 +124,31 @@ function RegisterAdmin() {
               required
             />
 
-            <div style={{ position: "relative" }}>
+            <div className="password-field">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password Admin"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{ width: "100%" }}
                 required
               />
-              <span
-                style={{ position: "absolute", right: 10, top: 12, cursor: "pointer", opacity: 0.6 }}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "🙈" : "👁️"}
-              </span>
+              <PasswordVisibilityButton
+                visible={showPassword}
+                onToggle={() => setShowPassword((visible) => !visible)}
+              />
             </div>
 
-            <div style={{ position: "relative" }}>
+            <div className="password-field">
               <input
-                type={showPassword ? "text" : "password"}
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Konfirmasi Password"
                 value={confirmPass}
                 onChange={(e) => setConfirmPass(e.target.value)}
-                style={{ width: "100%" }}
                 required
+              />
+              <PasswordVisibilityButton
+                visible={showConfirmPassword}
+                onToggle={() => setShowConfirmPassword((visible) => !visible)}
               />
             </div>
 

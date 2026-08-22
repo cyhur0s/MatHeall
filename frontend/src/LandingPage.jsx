@@ -38,6 +38,22 @@ export default function LandingPage() {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [developers, setDevelopers] = useState(() => getDeveloperFallback());
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+    const closeOnDesktop = () => {
+      if (window.innerWidth > 760) setMobileNavOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("resize", closeOnDesktop);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("resize", closeOnDesktop);
+    };
+  }, []);
 
   useEffect(() => {
     apiFetch("read_video.php")
@@ -107,13 +123,24 @@ export default function LandingPage() {
           <div className="lp-brand-icon">M</div>
           Matheal
         </a>
-        <div className="lp-navlinks">
-          <a href="#home">Beranda</a>
-          <a href="#workflow">Alur Belajar</a>
-          <a href="#features">Fitur</a>
-          <a href="#how">Cara Kerja</a>
-          <a href="#demo">Contoh</a>
-          <a href="#contact">Tentang</a>
+        <button
+          type="button"
+          className={`lp-mobile-toggle${mobileNavOpen ? " is-open" : ""}`}
+          aria-label={mobileNavOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+          aria-controls="landing-navigation"
+          aria-expanded={mobileNavOpen}
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <div id="landing-navigation" className={`lp-navlinks${mobileNavOpen ? " is-open" : ""}`}>
+          <a href="#home" onClick={() => setMobileNavOpen(false)}>Beranda</a>
+          <a href="#workflow" onClick={() => setMobileNavOpen(false)}>Alur Belajar</a>
+          <a href="#features" onClick={() => setMobileNavOpen(false)}>Fitur</a>
+          <a href="#how" onClick={() => setMobileNavOpen(false)}>Cara Kerja</a>
+          <a href="#demo" onClick={() => setMobileNavOpen(false)}>Contoh</a>
+          <a href="#contact" onClick={() => setMobileNavOpen(false)}>Tentang</a>
+          <button type="button" className="lp-mobile-login" onClick={() => navigate("/login")}>Login</button>
         </div>
         <div className="lp-nav-btns">
           <button className="btn-ghost" onClick={() => navigate("/login")}>Login</button>

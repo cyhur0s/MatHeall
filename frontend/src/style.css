@@ -2070,24 +2070,35 @@ input, textarea, select {
   white-space: nowrap !important;
   border: 0 !important;
 }
+.password-field {
+  position: relative;
+  width: 100%;
+}
+.password-field > input {
+  width: 100%;
+  padding-right: 44px !important;
+}
 .password-visibility-btn {
   position: absolute;
   top: 50%;
-  right: 8px;
-  width: 36px;
-  height: 36px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   padding: 0;
-  color: inherit;
+  color: #64748b;
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: pointer;
   transform: translateY(-50%);
+  opacity: .72;
+  transition: color .15s ease, opacity .15s ease;
 }
-.password-visibility-btn:hover { background: rgba(47, 115, 114, .08); }
-.password-visibility-btn:focus-visible { outline: 2px solid #2f7372; outline-offset: 1px; }
+.password-visibility-btn:hover { color: #274e55; opacity: 1; }
+.password-visibility-btn:focus-visible { outline: 2px solid #397582; outline-offset: 1px; opacity: 1; }
+.password-visibility-btn svg { display: block; pointer-events: none; }
 .login-card .logo-box { border-radius: 10px; }
 .login-card h1 { letter-spacing: -.03em; margin-top: 14px; }
 .login-card > p { color: #64748b; }
@@ -9053,4 +9064,31 @@ html, body { overflow-x: clip; }
   .adm-topbar-right { gap: 5px; }
   .adm-notif { width: 36px; height: 36px; min-height: 36px; }
   .adm-topbar-right .adm-avatar { width: 32px !important; height: 32px !important; flex-basis: 32px; }
+}
+.password-field > .password-visibility-btn {
+  top: 50% !important;
+  right: 10px !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  color: #64748b !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.password-field > .password-visibility-btn:hover {
+  color: #274e55 !important;
+  background: transparent !important;
+  transform: translateY(-50%) !important;
+}
+
+.password-field > .password-visibility-btn:focus-visible {
+  outline: 2px solid rgba(57, 117, 130, 0.35);
+  outline-offset: 1px;
+  transform: translateY(-50%) !important;
 }

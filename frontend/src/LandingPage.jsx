@@ -119,20 +119,22 @@ export default function LandingPage() {
 
       {/* NAVBAR */}
       <nav className="lp-nav">
-        <a className="lp-brand" href="#home" aria-label="Kembali ke bagian awal Matheal">
-          <div className="lp-brand-icon">M</div>
-          Matheal
-        </a>
-        <button
-          type="button"
-          className={`lp-mobile-toggle${mobileNavOpen ? " is-open" : ""}`}
-          aria-label={mobileNavOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-          aria-controls="landing-navigation"
-          aria-expanded={mobileNavOpen}
-          onClick={() => setMobileNavOpen((open) => !open)}
-        >
-          <span></span><span></span><span></span>
-        </button>
+        <div className="lp-nav-start">
+          <a className="lp-brand" href="#home" aria-label="Kembali ke bagian awal Matheal">
+            <div className="lp-brand-icon">M</div>
+            Matheal
+          </a>
+          <button
+            type="button"
+            className={`lp-mobile-toggle${mobileNavOpen ? " is-open" : ""}`}
+            aria-label={mobileNavOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            aria-controls="landing-navigation"
+            aria-expanded={mobileNavOpen}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            <span></span><span></span><span></span>
+          </button>
+        </div>
         <div id="landing-navigation" className={`lp-navlinks${mobileNavOpen ? " is-open" : ""}`}>
           <a href="#home" onClick={() => setMobileNavOpen(false)}>Beranda</a>
           <a href="#workflow" onClick={() => setMobileNavOpen(false)}>Alur Belajar</a>

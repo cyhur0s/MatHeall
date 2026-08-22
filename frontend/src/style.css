@@ -9096,6 +9096,17 @@ html, body { overflow-x: clip; }
   transform: translateY(-50%) !important;
 }
 
+/* Landing navigation: kelompokkan tombol sidebar di dekat identitas Matheal. */
+.lp-nav-start { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+@media (min-width: 1025px) {
+  .lp-navlinks { gap: clamp(.5rem, 1.2vw, .9rem); }
+}
+@media (max-width: 1024px) {
+  .lp-nav-start { gap: 8px; min-width: 0; }
+  .lp-nav .lp-navlinks { gap: 4px; }
+  .lp-nav .lp-navlinks a { min-height: 44px; padding-block: 10px; }
+}
+
 /* Feedback login tampil dekat dengan kolom yang perlu diperbaiki. */
 .login-error-message {
   display: flex;

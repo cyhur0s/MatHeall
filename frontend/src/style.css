@@ -8798,6 +8798,19 @@ html, body { overflow-x: clip; }
 
 @media (max-width: 1024px) {
   .lp-nav { position: sticky; overflow: visible; }
+  .lp-nav-btns {
+    display: flex;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .lp-nav-btns .btn-ghost {
+    display: inline-flex;
+    min-height: 40px;
+    padding: 8px 15px;
+    align-items: center;
+    justify-content: center;
+    font-size: .8125rem;
+  }
   .lp-mobile-toggle {
     position: relative;
     z-index: 140;
@@ -8829,8 +8842,8 @@ html, body { overflow-x: clip; }
   .lp-nav .lp-navlinks {
     position: fixed;
     top: 0;
-    right: 0;
-    left: auto;
+    right: auto;
+    left: 0;
     z-index: 130;
     display: flex;
     width: min(320px, calc(100vw - 44px));
@@ -8839,18 +8852,18 @@ html, body { overflow-x: clip; }
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 3px;
-    padding: 82px 16px 24px;
+    gap: 8px;
+    padding: 78px 14px 28px;
     overflow-y: auto;
     border: 0;
-    border-left: 1px solid #d5e2dd;
-    border-radius: 18px 0 0 18px;
+    border-right: 1px solid #d5e2dd;
+    border-radius: 0 18px 18px 0;
     background: rgba(255, 254, 250, .98);
-    box-shadow: -18px 0 42px rgba(24, 54, 51, .18);
+    box-shadow: 18px 0 42px rgba(24, 54, 51, .18);
     opacity: 0;
     visibility: hidden;
-    transform: translateX(104%);
-    transform-origin: right;
+    transform: translateX(-104%);
+    transform-origin: left;
     pointer-events: none;
     transition: opacity .2s ease, transform .24s ease, visibility .2s ease;
     backdrop-filter: blur(16px);
@@ -8864,10 +8877,10 @@ html, body { overflow-x: clip; }
   .lp-nav .lp-navlinks a {
     display: flex;
     width: 100%;
-    min-height: 42px;
-    padding: 10px 12px;
+    min-height: 46px;
+    padding: 11px 14px;
     align-items: center;
-    border-radius: 9px;
+    border-radius: 10px;
     color: #344e48;
     font-size: .875rem;
     font-weight: 700;
@@ -8876,17 +8889,7 @@ html, body { overflow-x: clip; }
   .lp-nav .lp-navlinks a:focus-visible { background: #e9f2ee; color: #215f6d; }
   .lp-nav .lp-navlinks a::after { display: none; }
   .lp-mobile-login {
-    display: block;
-    min-height: 44px;
-    margin-top: 5px;
-    border: 0;
-    border-radius: 9px;
-    background: var(--mh-brand, #2d7568);
-    color: #fff;
-    font: inherit;
-    font-size: .875rem;
-    font-weight: 800;
-    cursor: pointer;
+    display: none;
   }
 }
 
@@ -9091,4 +9094,33 @@ html, body { overflow-x: clip; }
   outline: 2px solid rgba(57, 117, 130, 0.35);
   outline-offset: 1px;
   transform: translateY(-50%) !important;
+}
+
+/* Feedback login tampil dekat dengan kolom yang perlu diperbaiki. */
+.login-error-message {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #f2c5c2;
+  border-radius: 10px;
+  background: #fff4f3;
+  color: #a3322d;
+  font-size: .8125rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.login-success-message {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #b9dfc9;
+  border-radius: 10px;
+  background: #effaf3;
+  color: #21673c;
+  font-size: .8125rem;
+  font-weight: 650;
+  line-height: 1.45;
 }

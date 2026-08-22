@@ -15,8 +15,9 @@ const MATH_FACTS = [
 
 function LoginPage() {
   const [tab, setTab] = useState("login");
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [registerError, setRegisterError] = useState("");
+  const [loginNotice, setLoginNotice] = useState("");
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -52,9 +53,11 @@ function LoginPage() {
   // LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError("");
+    setLoginNotice("");
 
     if (!username || !password) {
-      alert("Username dan password wajib diisi!");
+      setLoginError("Username dan password wajib diisi.");
       return;
     }
 
@@ -80,7 +83,7 @@ function LoginPage() {
         data = JSON.parse(text);
       } catch (err) {
         console.error("Failed to parse JSON:", text);
-        alert("Terjadi kesalahan pada server. Silakan cek koneksi backend.");
+        setLoginError("Terjadi kendala pada server. Silakan coba lagi.");
         return;
       }
 
@@ -99,26 +102,26 @@ function LoginPage() {
           navigate("/home");
         }
       } else {
-        setPopupMessage(data.message || "Login gagal.");
-        setShowPopup(true);
+        setLoginError("Username atau password yang Anda masukkan salah.");
       }
     } catch (error) {
       console.error("ERROR:", error);
-      alert("Backend tidak terhubung atau server bermasalah!");
+      setLoginError("Tidak dapat menghubungi server. Silakan coba lagi.");
     }
   };
 
   // REGISTER (Default role is user)
   const handleRegister = async (e) => {
     e.preventDefault();
+    setRegisterError("");
 
     if (!regUsername || !regPassword || !regConfirm) {
-      alert("Semua data wajib diisi!");
+      setRegisterError("Semua data wajib diisi.");
       return;
     }
 
     if (regPassword !== regConfirm) {
-      alert("Password tidak sama!");
+      setRegisterError("Konfirmasi password tidak sama.");
       return;
     }
 
@@ -141,20 +144,19 @@ function LoginPage() {
       const data = await response.json();
 
       if (data.status === "success") {
-        alert("Pendaftaran berhasil! Silakan masuk.");
-
         setTab("login");
         setUsername(regUsername);
+        setLoginNotice("Pendaftaran berhasil. Silakan masuk dengan akun baru Anda.");
 
         setRegUsername("");
         setRegPassword("");
         setRegConfirm("");
       } else {
-        alert(data.message);
+        setRegisterError(data.message || "Pendaftaran belum dapat diproses. Silakan coba lagi.");
       }
     } catch (error) {
       console.error(error);
-      alert("Gagal koneksi ke server!");
+      setRegisterError("Tidak dapat menghubungi server. Silakan coba lagi.");
     }
   };
 
@@ -267,7 +269,7 @@ function LoginPage() {
                 type="button"
                 className={`login-tab ${tab === "login" ? "active" : ""}`}
                 aria-pressed={tab === "login"}
-                onClick={() => setTab("login")}
+                onClick={() => { setTab("login"); setRegisterError(""); }}
               >
                 Masuk
               </button>
@@ -276,7 +278,7 @@ function LoginPage() {
                 type="button"
                 className={`login-tab ${tab === "register" ? "active" : ""}`}
                 aria-pressed={tab === "register"}
-                onClick={() => setTab("register")}
+                onClick={() => { setTab("register"); setLoginError(""); }}
               >
                 Daftar
               </button>
@@ -284,6 +286,12 @@ function LoginPage() {
 
             {tab === "login" ? (
               <form onSubmit={handleLogin}>
+                {loginNotice && <div className="login-success-message" role="status">{loginNotice}</div>}
+                {loginError && (
+                  <div className="login-error-message" role="alert" aria-live="assertive">
+                    {loginError}
+                  </div>
+                )}
                 <label className="sr-only" htmlFor="login-username">Username</label>
                 <input
                   id="login-username"
@@ -328,6 +336,11 @@ function LoginPage() {
               </form>
             ) : (
               <form onSubmit={handleRegister}>
+                {registerError && (
+                  <div className="login-error-message" role="alert" aria-live="assertive">
+                    {registerError}
+                  </div>
+                )}
                 <label className="sr-only" htmlFor="register-username">Username baru</label>
                 <input
                   id="register-username"
@@ -386,39 +399,6 @@ function LoginPage() {
             )}
           </div>
         </div>
-
-        {showPopup && (
-          <div className="popup-overlay">
-            <div className="modern-popup" role="alertdialog" aria-modal="true" aria-labelledby="login-error-title">
-              <div className="popup-icon">⚠️</div>
-
-              <h2 id="login-error-title">Gagal Masuk</h2>
-
-              <p>
-                {popupMessage || "Akun belum terdaftar atau password salah."}
-              </p>
-
-              <div className="popup-buttons">
-                <button
-                  className="popup-register-btn"
-                  onClick={() => {
-                    setShowPopup(false);
-                    setTab("register");
-                  }}
-                >
-                  Daftar Sekarang
-                </button>
-
-                <button
-                  className="popup-close-btn"
-                  onClick={() => setShowPopup(false)}
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {showForgot && (
           <div className="modal-overlay" onClick={() => setShowForgot(false)}>

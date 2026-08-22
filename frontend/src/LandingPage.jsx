@@ -323,7 +323,7 @@ export default function LandingPage() {
       {showVideoModal && (
         <div className="lp-vmodal-overlay" onClick={() => setShowVideoModal(false)}>
           <div className="lp-vmodal-bar" onClick={e => e.stopPropagation()}>
-            <div className="lp-vmodal-title">Video Materi MatHeal</div>
+            <div className="lp-vmodal-title">Video Tutorial</div>
             <button className="lp-vmodal-close" onClick={() => setShowVideoModal(false)} aria-label="Tutup">×</button>
           </div>
           <div className="lp-vmodal-body" onClick={e => e.stopPropagation()}>

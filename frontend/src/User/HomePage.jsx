@@ -283,19 +283,19 @@ function GuideModal({ onClose, activeLevel, levelGroups }) {
           </div>
 
           {STEPS[activeStep].isFormula ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '320px', overflowY: 'auto', paddingRight: '4px' }}>
+            <div className="guide-formula-list">
               {STEPS[activeStep].topics.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
+                <div className="guide-formula-empty">
                   Tidak ada rumus tersedia untuk level ini.
                 </div>
               ) : STEPS[activeStep].topics.map((topic, ti) => (
-                <div key={ti} style={{ background: '#f8fafc', borderRadius: '12px', padding: '14px 16px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontWeight: 800, fontSize: '13px', color: '#1e40af', marginBottom: '8px' }}>📘 {topic.topicTitle}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div key={ti} className="guide-formula-card">
+                  <div className="guide-formula-topic">📘 {topic.topicTitle}</div>
+                  <div className="guide-formula-items">
                     {topic.formulas.map((f, fi) => (
-                      <div key={fi} style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', minWidth: '90px', flexShrink: 0 }}>{f.label}:</span>
-                        <code style={{ fontSize: '13px', color: '#1e293b', background: '#e0f2fe', padding: '2px 8px', borderRadius: '6px', fontFamily: 'monospace' }}>{f.formula}</code>
+                      <div key={fi} className="guide-formula-item">
+                        <span className="guide-formula-label">{f.label}:</span>
+                        <code>{f.formula}</code>
                       </div>
                     ))}
                   </div>

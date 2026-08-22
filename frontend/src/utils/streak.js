@@ -55,6 +55,11 @@ export function getStoredStreak(value = new Date()) {
     lastQuizDate,
     today: getWibDate(value),
   });
+  // Jika satu hari kalender penuh sudah terlewat tanpa kuis selesai,
+  // simpan resetnya agar angka streak tidak kembali muncul pada halaman lain.
+  if (String(status.streak) !== currentStreak) {
+    localStorage.setItem("streak", String(status.streak));
+  }
   if (String(status.longestStreak) !== savedLongest) {
     localStorage.setItem("longestStreak", String(status.longestStreak));
   }

@@ -13,14 +13,10 @@ export async function aiFetch(path, options = {}) {
   const token = localStorage.getItem("auth_token") || "";
   const headers = new Headers(options.headers || {});
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(aiUrl(path), { ...options, headers });
-  if (response.status === 401 && token) {
-    clearAuthSession();
-    if (!window.location.pathname.endsWith("/login")) {
-      window.location.assign(new URL("login", `${window.location.origin}${import.meta.env.BASE_URL}`).href);
-    }
-  }
-  return response;
+  // Layanan AI adalah layanan terpisah. Respons 401 di sini dapat terjadi
+  // karena konfigurasi internal antar-server, bukan berarti sesi web pengguna
+  // harus langsung dihapus. AskMatheal akan menampilkan pesannya di chat.
+  return fetch(aiUrl(path), { ...options, headers });
 }
 
 export async function apiFetch(path, options = {}) {

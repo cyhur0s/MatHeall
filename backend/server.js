@@ -57,8 +57,14 @@ async function requireAuthenticatedUser(req, res, next) {
       timeout: 5000,
       validateStatus: () => true,
     });
-    if (response.status !== 200 || response.data?.status !== "success") {
+    if (response.status === 401) {
       return res.status(401).json({ error: "Sesi login tidak valid atau telah berakhir." });
+    }
+    if (response.status === 403) {
+      return res.status(503).json({ error: "Kunci validasi sesi AskMatheal tidak cocok dengan server utama." });
+    }
+    if (response.status !== 200 || response.data?.status !== "success") {
+      return res.status(503).json({ error: "Layanan validasi sesi sedang tidak tersedia." });
     }
     req.authUser = response.data.user;
     return next();
@@ -88,13 +94,13 @@ let geminiStatus = {
   reason: null,
 };
 
-const AI_PROMPT = `Anda adalah tutor matematika bernama AskMatheal yang membantu mahasiswa Indonesia. 
-Jawab pertanyaan dengan ramah, jelas, dan berikan langkah-langkah penyelesaian secara detail.
-Gunakan bahasa Indonesia yang baik. Jika soal berisi rumus matematika, tuliskan dengan format yang mudah dibaca.
-Gunakan Markdown yang rapi: judul singkat, daftar bernomor untuk langkah, dan cetak tebal untuk istilah penting.
-Semua notasi matematika wajib memakai LaTeX: gunakan $...$ untuk rumus sebaris dan $$...$$ untuk persamaan terpisah.
-Jangan membungkus rumus LaTeX dalam blok kode atau tanda backtick.
-Selalu akhiri dengan kesimpulan atau jawaban akhir.`;
+const AI_PROMPT = `Anda adalah tutor matematika bernama AskMatheal yang membantu mahasiswa Indonesia.
+Utamakan ketepatan matematika, bukan jawaban cepat. Pahami pertanyaan terlebih dahulu, lalu periksa kembali operasi hitung, tanda positif-negatif, domain, satuan, dan bentuk akhir sebelum menjawab.
+
+Untuk soal perhitungan, gunakan urutan: **Diketahui**, **Ditanyakan**, **Langkah penyelesaian**, lalu **Jawaban akhir**. Tunjukkan transformasi aljabar yang penting dan jangan melompati langkah yang dapat membingungkan mahasiswa.
+Untuk pertanyaan konsep atau rumus, jelaskan arti simbol, syarat penggunaan rumus, serta satu contoh singkat bila membantu. Jangan mengarang nilai, konteks, atau soal yang tidak diberikan. Jika data atau notasi ambigu sehingga jawaban tidak bisa dipastikan, katakan bagian yang kurang dan ajukan satu pertanyaan klarifikasi.
+
+Gunakan bahasa Indonesia yang ramah, ringkas, dan jelas. Gunakan Markdown rapi dengan judul singkat dan daftar bernomor jika diperlukan. Semua notasi matematika wajib memakai LaTeX: $...$ untuk rumus sebaris dan $$...$$ untuk persamaan terpisah. Jangan membungkus LaTeX dalam blok kode atau backtick. Jangan menyatakan hasil pasti sebelum memverifikasinya.`;
 
 const AI_GRADING_INSTRUCTION = `Anda adalah penilai matematika MatHeal yang objektif dan konsisten.
 Nilai kebenaran jawaban akhir serta validitas metode secara terpisah.

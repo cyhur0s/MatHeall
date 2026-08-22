@@ -20,11 +20,12 @@ export async function aiFetch(path, options = {}) {
 }
 
 export async function apiFetch(path, options = {}) {
+  const { preserveSessionOnUnauthorized = false, ...fetchOptions } = options;
   const token = localStorage.getItem("auth_token") || "";
-  const headers = new Headers(options.headers || {});
+  const headers = new Headers(fetchOptions.headers || {});
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(apiUrl(path), { ...options, headers });
-  if (response.status === 401 && token) {
+  const response = await fetch(apiUrl(path), { ...fetchOptions, headers });
+  if (response.status === 401 && token && !preserveSessionOnUnauthorized) {
     clearAuthSession();
     if (!window.location.pathname.endsWith("/login")) {
       window.location.assign(new URL("login", `${window.location.origin}${import.meta.env.BASE_URL}`).href);

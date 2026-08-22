@@ -27,7 +27,7 @@ function AskMatheal() {
 
   const loadSessions = async () => {
     try {
-      const response = await apiFetch(`chat_history.php?t=${Date.now()}`, { cache: "no-store" });
+      const response = await apiFetch(`chat_history.php?t=${Date.now()}`, { cache: "no-store", preserveSessionOnUnauthorized: true });
       const data = await response.json();
       if (response.ok && data.status === "success") setSessions(data.sessions || []);
     } catch (error) {
@@ -65,7 +65,7 @@ function AskMatheal() {
     if (isTyping) return;
     try {
       setHistoryLoading(true);
-      const response = await apiFetch(`chat_history.php?session_id=${sessionId}&t=${Date.now()}`, { cache: "no-store" });
+      const response = await apiFetch(`chat_history.php?session_id=${sessionId}&t=${Date.now()}`, { cache: "no-store", preserveSessionOnUnauthorized: true });
       const data = await response.json();
       if (!response.ok || data.status !== "success") throw new Error(data.message || "Histori tidak tersedia");
       setActiveSessionId(Number(sessionId));
@@ -83,6 +83,7 @@ function AskMatheal() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId || 0, role, message: text, title }),
+      preserveSessionOnUnauthorized: true,
     });
     const data = await response.json();
     if (!response.ok || data.status !== "success") throw new Error(data.message || "Histori gagal disimpan");
@@ -93,7 +94,7 @@ function AskMatheal() {
     event.stopPropagation();
     if (!window.confirm("Hapus percakapan ini?")) return;
     try {
-      const response = await apiFetch(`chat_history.php?session_id=${sessionId}`, { method: "DELETE" });
+      const response = await apiFetch(`chat_history.php?session_id=${sessionId}`, { method: "DELETE", preserveSessionOnUnauthorized: true });
       if (!response.ok) throw new Error("Gagal menghapus percakapan");
       if (Number(sessionId) === activeSessionId) startNewChat();
       await loadSessions();

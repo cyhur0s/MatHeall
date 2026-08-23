@@ -300,16 +300,9 @@ app.post("/api/check-answer", async (req, res) => {
     return res.status(422).json({ error: "Kunci jawaban belum tersedia" });
   }
 
-  // Jawaban pasti dan jawaban numerik diperiksa tanpa AI agar hasil konsisten.
+  // Kecocokan pasti dipakai untuk mempercepat jawaban yang ekuivalen. Jika
+  // berbeda, jangan langsung ditolak: AI tetap perlu menilai metode alternatif.
   const deterministic = gradeDeterministically({ jawaban, kunci_jawaban });
-  if (deterministic.decided && !deterministic.correct) {
-    return res.json({
-      correct: false,
-      score: deterministic.score,
-      source: deterministic.reason,
-      feedback: "Jawaban akhir tidak sesuai dengan kunci referensi.",
-    });
-  }
 
   const hasGeminiKey = GEMINI_KEY && GEMINI_KEY !== "your_gemini_api_key_here";
 
@@ -326,7 +319,7 @@ app.post("/api/check-answer", async (req, res) => {
       correct: false,
       score: 0,
       source: "offline_fallback",
-      feedback: "Jawaban tidak sama persis dengan kunci dan layanan AI belum tersedia untuk memeriksa bentuk alternatif.",
+      feedback: "Layanan AI belum tersedia untuk memeriksa bentuk jawaban alternatif terhadap kunci referensi.",
     });
   }
 

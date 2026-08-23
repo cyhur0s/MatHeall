@@ -116,7 +116,7 @@ async function checkAnswerWithAI({ pertanyaan, proses, jawaban, kunci_jawaban })
     if (!res.ok) throw new Error("AI server error");
     return await res.json(); // { correct, feedback }
   } catch {
-    // Fallback konservatif: hanya kecocokan pasti atau satu nilai numerik.
+    // Fallback konservatif: tetap mengenali label fungsi dan pecahan ekuivalen.
     const normalize = (value) => String(value || "")
       .normalize("NFKC")
       .toLowerCase()
@@ -125,17 +125,31 @@ async function checkAnswerWithAI({ pertanyaan, proses, jawaban, kunci_jawaban })
       .trim()
       .replace(/[.,;:!?]+$/g, "")
       .trim();
+    const comparableExpression = (value) => {
+      const normalized = String(value || "")
+        .normalize("NFKC").toLowerCase().replace(/[−–—]/g, "-")
+        .replace(/\\(?:d?frac)\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, "$1/$2")
+        .replace(/\\left|\\right|\$|\s+/g, "");
+      const equalsCount = (normalized.match(/=/g) || []).length;
+      if (equalsCount > 1) return "";
+      return equalsCount === 1 ? normalized.slice(normalized.lastIndexOf("=") + 1) : normalized;
+    };
     const singleNumber = (value) => {
-      const matches = String(value || "").replace(/[−–—]/g, "-").replace(/,/g, ".")
-        .match(/[-+]?(?:\d+(?:\.\d+)?|\.\d+)/g);
-      return matches?.length === 1 && Number.isFinite(Number(matches[0])) ? Number(matches[0]) : null;
+      const expression = comparableExpression(value).replace(/,/g, ".");
+      const fraction = /^([-+]?(?:\d+(?:\.\d+)?|\.\d+))\/([-+]?(?:\d+(?:\.\d+)?|\.\d+))$/.exec(expression);
+      if (/^[-+]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(expression)) return Number(expression);
+      if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
+      return null;
     };
     const normalizedAnswer = normalize(jawaban);
     const normalizedKey = normalize(kunci_jawaban);
+    const expressionAnswer = comparableExpression(jawaban);
+    const expressionKey = comparableExpression(kunci_jawaban);
     const answerNumber = singleNumber(jawaban);
     const keyNumber = singleNumber(kunci_jawaban);
     const correct = Boolean(normalizedAnswer && normalizedKey) && (
       normalizedAnswer === normalizedKey ||
+      (expressionAnswer && expressionAnswer === expressionKey) ||
       (answerNumber !== null && keyNumber !== null && Math.abs(answerNumber - keyNumber) < 0.001)
     );
     return {

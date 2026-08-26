@@ -33,6 +33,8 @@ const ACTIVITY_META = {
   user_logout: { label: "Logout", icon: "←", tone: "logout" },
   materi: { label: "Materi", icon: "▤", tone: "material" },
   kuis: { label: "Kuis", icon: "✓", tone: "quiz" },
+  ask: { label: "AskMatheal", icon: "?", tone: "general" },
+  profile_update: { label: "Profil", icon: "✎", tone: "general" },
 };
 
 const DashboardSection = ({

@@ -9111,8 +9111,17 @@ html, body { overflow-x: clip; }
 }
 @media (max-width: 1024px) {
   .lp-nav-start { gap: 7px; min-width: 0; }
-  .lp-nav .lp-navlinks { gap: 4px; }
-  .lp-nav .lp-navlinks a { min-height: 44px; padding-block: 10px; }
+  .lp-nav .lp-navlinks {
+    justify-content: flex-start;
+    align-content: flex-start;
+    gap: 2px;
+    padding: 66px 12px 18px;
+  }
+  .lp-nav .lp-navlinks a {
+    min-height: 42px;
+    padding: 8px 12px;
+    line-height: 1.25;
+  }
 }
 
 /* Feedback login tampil dekat dengan kolom yang perlu diperbaiki. */

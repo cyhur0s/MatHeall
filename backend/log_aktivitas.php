@@ -15,7 +15,7 @@ if (!$data) {
 }
 
 $requestedType = isset($data['tipe']) ? strtolower(trim((string) $data['tipe'])) : '';
-$allowedUserTypes = ['materi', 'kuis'];
+$allowedUserTypes = ['materi', 'kuis', 'ask'];
 $tipe = $currentUser['role'] === 'user' && in_array($requestedType, $allowedUserTypes, true)
     ? $requestedType
     : 'aktivitas';

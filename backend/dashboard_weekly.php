@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
 
 requireRole($conn, 'admin');
 
-$userActivityTypes = "'user_register','user_login','user_logout','materi','kuis'";
+$userActivityTypes = "'user_register','user_login','user_logout','materi','kuis','ask','profile_update'";
 
 $result = mysqli_query($conn, "SELECT
     COUNT(*) AS total,

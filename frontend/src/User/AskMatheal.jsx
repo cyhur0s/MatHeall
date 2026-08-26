@@ -112,6 +112,14 @@ function AskMatheal() {
     setMessage("");
     setIsTyping(true);
 
+    // Catat penggunaan tutor tanpa menyimpan isi pertanyaan pengguna.
+    // Aktivitas ini hanya untuk ringkasan operasional admin.
+    apiFetch("log_aktivitas.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipe: "ask", deskripsi: "Menggunakan AskMatheal untuk bertanya." }),
+    }).catch((error) => console.warn("Aktivitas AskMatheal belum tercatat:", error));
+
     let sessionId = activeSessionId;
     try {
       sessionId = await saveHistoryMessage({ sessionId, role: "user", text: cleanMessage, title: cleanMessage.slice(0, 72) });

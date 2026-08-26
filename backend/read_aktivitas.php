@@ -10,7 +10,7 @@ include "connection.php";
 requireRole($conn, "admin");
 
 $scope = strtolower(trim($_GET['scope'] ?? 'all'));
-$userActivityTypes = "'user_register','user_login','user_logout','materi','kuis'";
+$userActivityTypes = "'user_register','user_login','user_logout','materi','kuis','ask','profile_update'";
 $userScopeFilter = $scope === 'user'
     ? "WHERE COALESCE(u.role, 'user') = 'user' AND a.user_id IS NOT NULL AND a.tipe IN ($userActivityTypes)"
     : "";

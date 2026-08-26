@@ -20,6 +20,7 @@ import { getStoredStreak } from "../utils/streak";
 import { syncCurrentUserProgress } from "../utils/userProgress";
 import { getHeartState } from "../utils/hearts";
 import { buildCumulativeWeekdayActivity, readDailyActivity } from "../utils/dailyMissions";
+import { apiFetch } from "../config/api";
 
 ChartJS.register(
   CategoryScale,
@@ -46,16 +47,40 @@ const ProfilePage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editUsername, setEditUsername] = useState(username);
   const [editAvatar, setEditAvatar] = useState(avatar);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaveError, setProfileSaveError] = useState("");
 
   const displayAvatar = avatar ? avatar : username.slice(0, 2).toUpperCase();
 
-  const saveProfile = () => {
-    localStorage.setItem("username", editUsername);
-    localStorage.setItem("avatar", editAvatar);
-    setUsername(editUsername);
-    setAvatar(editAvatar);
-    setShowEditModal(false);
-    syncCurrentUserProgress();
+  const saveProfile = async () => {
+    const nextUsername = editUsername.trim();
+    const avatarChanged = editAvatar !== avatar;
+    setProfileSaveError("");
+
+    setProfileSaving(true);
+    try {
+      const response = await apiFetch("update_profile.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: nextUsername, avatar_changed: avatarChanged }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.status !== "success") {
+        setProfileSaveError(data.message || "Profil belum dapat diperbarui. Silakan coba lagi.");
+        return;
+      }
+
+      localStorage.setItem("username", data.user?.username || nextUsername);
+      localStorage.setItem("avatar", editAvatar);
+      setUsername(data.user?.username || nextUsername);
+      setAvatar(editAvatar);
+      setShowEditModal(false);
+      syncCurrentUserProgress();
+    } catch {
+      setProfileSaveError("Tidak dapat menghubungi server. Perubahan belum disimpan.");
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const [stats, setStats] = useState({
@@ -316,6 +341,7 @@ const ProfilePage = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Edit Profile</h3>
+            {profileSaveError && <div className="login-error-message" role="alert">{profileSaveError}</div>}
             <div className="form-group">
               <label>Username</label>
               <input
@@ -350,8 +376,10 @@ const ProfilePage = () => {
               />
             </div>
             <div className="modal-actions">
-              <button className="modal-btn modal-cancel" onClick={() => setShowEditModal(false)}>Batal</button>
-              <button className="modal-btn modal-save" onClick={saveProfile}>Simpan Perubahan</button>
+              <button className="modal-btn modal-cancel" onClick={() => setShowEditModal(false)} disabled={profileSaving}>Batal</button>
+              <button className="modal-btn modal-save" onClick={saveProfile} disabled={profileSaving}>
+                {profileSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
             </div>
           </div>
         </div>

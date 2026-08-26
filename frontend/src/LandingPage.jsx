@@ -120,10 +120,6 @@ export default function LandingPage() {
       {/* NAVBAR */}
       <nav className="lp-nav">
         <div className="lp-nav-start">
-          <a className="lp-brand" href="#home" aria-label="Kembali ke bagian awal Matheal">
-            <div className="lp-brand-icon">M</div>
-            Matheal
-          </a>
           <button
             type="button"
             className={`lp-mobile-toggle${mobileNavOpen ? " is-open" : ""}`}
@@ -134,6 +130,10 @@ export default function LandingPage() {
           >
             <span></span><span></span><span></span>
           </button>
+          <a className="lp-brand" href="#home" aria-label="Kembali ke bagian awal Matheal">
+            <div className="lp-brand-icon">M</div>
+            Matheal
+          </a>
         </div>
         <div id="landing-navigation" className={`lp-navlinks${mobileNavOpen ? " is-open" : ""}`}>
           <a href="#home" onClick={() => setMobileNavOpen(false)}>Beranda</a>

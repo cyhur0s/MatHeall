@@ -192,7 +192,7 @@ export default function LandingPage() {
       <section id="features" className="lp-section">
         <div className="lp-section-header">
           <span className="lp-section-tag">Yang tersedia di MatHeal</span>
-          <h2 className="lp-section-title">Satu alur belajar dari materi sampai progres</h2>
+          <h2 className="lp-section-title">Fitur untuk memahami materi, berlatih, dan memantau progres</h2>
           <p className="lp-section-sub">Setiap fitur membantu pengguna memahami konsep, mencoba penyelesaian, memperbaiki kesalahan, dan melanjutkan level.</p>
         </div>
         <div className="lp-features-grid">

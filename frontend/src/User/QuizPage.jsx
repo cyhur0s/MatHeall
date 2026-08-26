@@ -22,6 +22,16 @@ const QUIZ_UI_ICONS = Object.freeze({
   target: "🎯",
 });
 
+// Setiap level memakai paket soal yang sama agar batas lulus konsisten:
+// 7 jawaban benar dari 10 soal (70%). Jangan menghitung kelulusan dari
+// sejumlah soal yang kebetulan tersedia di database.
+const QUIZ_QUESTION_COUNT = 10;
+const PASSING_CORRECT_ANSWERS = 7;
+
+const hasPassedQuiz = (totalQuestions, correctCount) => (
+  totalQuestions === QUIZ_QUESTION_COUNT && correctCount >= PASSING_CORRECT_ANSWERS
+);
+
 // ── QUIZ MAPPING ─────────────────────────────────────────────────
 const QUIZ_MAPPING = {
   "Limit":                        { title: "Limit" },
@@ -212,7 +222,7 @@ function VerificationPendingPanel({ feedback, onRetry }) {
 function ResultPage({ totalQuestions, results, levelId, quizInfo, paramTingkat, onRetry, quizTheme, heartState, missionRewarded }) {
   const navigate = useNavigate();
   const correctCount = results.filter(r => r.correct).length;
-  const isPassed = totalQuestions > 0 && correctCount >= Math.ceil(totalQuestions * 0.7);
+  const isPassed = hasPassedQuiz(totalQuestions, correctCount);
 
   // Tingkat berikutnya tetap berada pada materi yang sama, selaras dengan Bank Soal admin.
   const levelSequence = ["mudah", "sedang", "sulit"];
@@ -274,7 +284,7 @@ function ResultPage({ totalQuestions, results, levelId, quizInfo, paramTingkat, 
                   background: isPassed ? "linear-gradient(90deg,#10b981,#059669)" : "linear-gradient(90deg,#f87171,#ef4444)"
                 }} />
             </div>
-            <div className="quiz-result-target">Target kelulusan: {Math.ceil(totalQuestions * 0.7)} / {totalQuestions}</div>
+            <div className="quiz-result-target">Target kelulusan: {PASSING_CORRECT_ANSWERS} / {QUIZ_QUESTION_COUNT}</div>
 
             {!isPassed && (
               <div className="quiz-heart-loss">
@@ -438,6 +448,19 @@ function QuizPage() {
           opsi:          Array.isArray(q.opsi) ? q.opsi : [],
           originalIndex: index,
         }));
+
+        if (qs.length < QUIZ_QUESTION_COUNT) {
+          setLoadError(
+            `Bank soal tingkat ${paramTingkat} untuk ${quizInfo.title} belum lengkap. ` +
+            `Dibutuhkan ${QUIZ_QUESTION_COUNT} soal unik, tetapi baru tersedia ${qs.length} soal.`
+          );
+          qs = [];
+        }
+      } else {
+        setLoadError(
+          `Bank soal tingkat ${paramTingkat} untuk ${quizInfo.title} belum tersedia. ` +
+          `Admin perlu menambahkan ${QUIZ_QUESTION_COUNT} soal unik.`
+        );
       }
     } catch (err) {
       console.error("Gagal mengambil soal:", err);
@@ -528,7 +551,7 @@ function QuizPage() {
     if (!showResult || resultProcessedRef.current) return;
     resultProcessedRef.current = true;
     const correctCount = results.filter(r => r.correct).length;
-    const isPassed = totalQuestions > 0 ? correctCount >= Math.ceil(totalQuestions * 0.7) : false;
+    const isPassed = hasPassedQuiz(totalQuestions, correctCount);
 
     try {
       const prog = JSON.parse(localStorage.getItem("levelProgress") || "{}");
@@ -634,9 +657,9 @@ function QuizPage() {
           <main className="quiz-wrapper quiz-game-shell">
             <div className="question-card" style={{ padding:"40px", textAlign:"center", flexDirection:"column" }}>
               <div style={{ fontSize:48, marginBottom:16 }}>{QUIZ_UI_ICONS.notes}</div>
-              <h2>Soal Belum Ditambahkan Admin</h2>
+              <h2>Bank Soal Belum Siap</h2>
               <p style={{ color:"#64748b", margin:"12px 0 24px" }}>
-                Belum ada soal di database untuk kuis <b>{quizInfo.title}</b>.
+                {loadError || `Belum ada soal di database untuk kuis ${quizInfo.title}.`}
               </p>
               <button className="submit-btn" onClick={() => navigate("/home")}>← Kembali ke Home</button>
             </div>

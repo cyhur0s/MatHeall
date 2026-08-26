@@ -9109,6 +9109,47 @@ html, body { overflow-x: clip; }
   color: #a53f35;
 }
 
+/* Aksi yang muncul setelah pengguna membuka materi dari jalur kuis. */
+.mat-learning-actions,
+.viewer-quiz-footer .viewer-quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mat-learning-context .mat-learning-back,
+.viewer-quiz-footer .viewer-all-materi {
+  color: #226b5f;
+  background: #fff;
+  border-color: #9dc9be;
+}
+.mat-learning-context .mat-learning-back:hover,
+.viewer-quiz-footer .viewer-all-materi:hover {
+  color: #19584e;
+  background: #edf7f3;
+}
+
+.afm-material-context {
+  display: grid;
+  gap: 4px;
+  padding: 11px 13px;
+  border: 1px solid #b9d9d5;
+  border-radius: 10px;
+  background: #f0f9f7;
+  color: #174f4b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.afm-material-context strong { font-size: 13px; }
+.afm-material-context span { color: #34716b; }
+.afm-material-context small { color: #5b6f72; font-size: 12px; }
+@media (max-width: 640px) {
+  .mat-learning-actions,
+  .viewer-quiz-footer .viewer-quiz-actions { width: 100%; }
+  .mat-learning-actions button,
+  .viewer-quiz-footer .viewer-quiz-actions button { flex: 1 1 0; }
+}
+
 /* Landing navigation: tombol sidebar berada di sisi kiri logo pada layar ringkas. */
 .lp-nav-start { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 @media (min-width: 1025px) {

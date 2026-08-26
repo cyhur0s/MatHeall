@@ -2,27 +2,10 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import UserSidebar from "../UserSidebar";
 import { apiFetch, apiUrl } from "../config/api";
+import { MATERIAL_TOPIC_MAP } from "../data/quizCatalog";
 
 const LEVEL_LABELS = { mudah: "Mudah", sedang: "Sedang", sulit: "Sulit" };
-const TOPIC_FILE_HINTS = {
-  Limit: "01 Limit",
-  Turunan: "02 Turunan",
-  Himpunan: "03 Himpunan",
-  Boolean: "04 Logika Proposisi",
-  "Aljabar Boolean": "05 Aljabar Boolean",
-  "Bilangan Kompleks": "06 Bilangan Kompleks",
-  Matriks: "07 Determinan",
-  "Transformasi Linier": "08 Transformasi Linier",
-  Biner: "09 Bilangan Biner",
-  "Rekursi Linier": "10 Rekursi Linier",
-  "Operasi Graf": "11 Operasi Graf",
-  "Analisis Algoritma": "12 Analisis Algoritma",
-  Integral: "13 Integral",
-  "Persamaan Linear": "14 Persamaan Linear",
-  "geometri-dasar": "15 Geometri Dasar",
-  "logika-matematika": "16 Logika Matematika",
-  Trigonometri: "17 Trigonometri",
-};
+const TOPIC_FILE_HINTS = MATERIAL_TOPIC_MAP;
 
 const normalizeText = (value = "") => value
   .toLowerCase()
@@ -138,6 +121,23 @@ function MateriPage() {
     navigate(`/quiz/${encodeURIComponent(quizTopic)}?tingkat=${requestedLevel}`);
   };
 
+  // Keluar dari materi yang dibuka dari jalur kuis harus mengembalikan
+  // pengguna ke katalog materi lengkap, bukan menyisakan filter topik lama.
+  const handleExitLearningPath = () => {
+    setSelectedMateri(null);
+    setSearch("");
+    setSelectedCategory("semua");
+    navigate("/materi");
+  };
+
+  const handleCloseViewer = () => {
+    if (requestedTopic) {
+      handleExitLearningPath();
+      return;
+    }
+    setSelectedMateri(null);
+  };
+
   const getFileIcon = (ext) => {
     switch (ext) {
       case "pdf": return "📄";
@@ -179,9 +179,14 @@ function MateriPage() {
                 <strong>{requestedTopic} · Level {LEVEL_LABELS[requestedLevel]}</strong>
                 <p>Pelajari modul ini terlebih dahulu. Tombol mulai kuis tersedia di bawah pembaca materi.</p>
               </div>
-              <button type="button" onClick={() => selectedMateri && handleStartQuiz()} disabled={!selectedMateri}>
-                Mulai Quiz
-              </button>
+              <div className="mat-learning-actions">
+                <button type="button" className="mat-learning-back" onClick={handleExitLearningPath}>
+                  Semua Materi
+                </button>
+                <button type="button" onClick={() => selectedMateri && handleStartQuiz()} disabled={!selectedMateri}>
+                  Mulai Quiz
+                </button>
+              </div>
             </div>
           )}
 
@@ -312,7 +317,7 @@ function MateriPage() {
 
       {/* MATERIAL VIEWER MODAL */}
       {selectedMateri && (
-        <div className="viewer-overlay" onClick={() => setSelectedMateri(null)}>
+        <div className="viewer-overlay" onClick={handleCloseViewer}>
           <div className="viewer-box" role="dialog" aria-modal="true" aria-labelledby="material-viewer-title" style={{ width: "92%", maxWidth: "960px", height: "88vh", display: "flex", flexDirection: "column", padding: "20px" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -340,7 +345,7 @@ function MateriPage() {
                 >
                   ⬇️ Unduh Berkas
                 </a>
-                <button className="viewer-close" onClick={() => setSelectedMateri(null)} aria-label="Tutup materi">
+                <button className="viewer-close" onClick={handleCloseViewer} aria-label={requestedTopic ? "Kembali ke semua materi" : "Tutup materi"}>
                   ✕
                 </button>
               </div>
@@ -383,7 +388,10 @@ function MateriPage() {
                 <span>Sudah selesai mempelajari materi?</span>
                 <strong>Lanjutkan ke kuis {LEVEL_LABELS[requestedLevel]} untuk {requestedTopic || findQuizTopicForMaterial(selectedMateri)}</strong>
               </div>
-              <button type="button" onClick={handleStartQuiz}>Mulai Quiz Sekarang</button>
+              <div className="viewer-quiz-actions">
+                {requestedTopic && <button type="button" className="viewer-all-materi" onClick={handleExitLearningPath}>Lihat Semua Materi</button>}
+                <button type="button" onClick={handleStartQuiz}>Mulai Quiz Sekarang</button>
+              </div>
             </div>
           </div>
         </div>

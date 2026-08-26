@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../config/api";
+import { MATERIAL_TOPIC_MAP, findQuizCategoryForMaterial } from "../../data/quizCatalog";
 
 // ─── Warna badge per level ──────────────────────────────────────────────────
 const LEVEL_CONFIG = {
@@ -30,6 +31,16 @@ const LEVEL_CONFIG = {
 };
 
 const EMPTY_PG_OPTIONS = ["", "", "", ""];
+
+const getMaterialAlignment = (material) => {
+  const category = findQuizCategoryForMaterial(material?.nama_materi);
+  return {
+    title: category?.title || material?.nama_materi || "Materi belum dipilih",
+    module: category ? MATERIAL_TOPIC_MAP[category.key] || null : null,
+  };
+};
+
+const getMaterialLabel = (material) => getMaterialAlignment(material).title;
 
 function parseQuestionOptions(rawOptions) {
   if (Array.isArray(rawOptions)) return [...rawOptions, ...EMPTY_PG_OPTIONS].slice(0, 4).map((item) => String(item || ""));
@@ -115,8 +126,13 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
     grouped[s.id_materi].push(s);
   });
 
-  const getMateriName = (id) =>
-    materi.find((m) => m.id_materi == id)?.nama_materi || `Materi #${id}`;
+  const getMateriName = (id) => {
+    const selectedMaterial = materi.find((m) => m.id_materi == id);
+    return selectedMaterial ? getMaterialLabel(selectedMaterial) : `Materi #${id}`;
+  };
+
+  const selectedFormMaterial = materi.find((m) => String(m.id_materi) === String(soalForm.id_materi));
+  const selectedAlignment = getMaterialAlignment(selectedFormMaterial);
 
   // ── CRUD Handlers ──────────────────────────────────────────────────────────
   const openAddSoal = (id_materi = material?.id_materi || "") => {
@@ -303,7 +319,7 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
           {config.emoji}
         </div>
         <div>
-          <h2 className="afm-level-title">{config.label} · {material?.nama_materi}</h2>
+          <h2 className="afm-level-title">{config.label} · {getMaterialLabel(material)}</h2>
           <p className="afm-level-desc">{config.desc}</p>
         </div>
         <div className="afm-level-stats" style={{ marginLeft: "auto" }}>
@@ -335,7 +351,7 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
           <option value="all">Semua Materi</option>
           {materi.map((m) => (
             <option key={m.id_materi} value={m.id_materi}>
-              {m.nama_materi}
+              {getMaterialLabel(m)}
             </option>
           ))}
         </select>
@@ -500,11 +516,20 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
                   <option value="">-- Pilih Materi --</option>
                   {materi.map((m) => (
                     <option key={m.id_materi} value={m.id_materi}>
-                      {m.nama_materi}
+                      {getMaterialLabel(m)}
                     </option>
                   ))}
                 </select>
               </div>
+              {soalForm.id_materi && (
+                <div className="form-group" style={{ marginTop: -2 }}>
+                  <div className="afm-material-context" role="note">
+                    <strong>Materi acuan: {selectedAlignment.title}</strong>
+                    {selectedAlignment.module ? <span>Modul terkait: {selectedAlignment.module}.pdf</span> : <span>Pastikan topik soal sesuai isi materi yang dipilih.</span>}
+                    <small>Soal, opsi, dan kunci jawaban harus membahas konsep pada materi ini; jangan mencampurkan topik lain.</small>
+                  </div>
+                </div>
+              )}
               <div className="form-group">
                 <label className="form-label">Level Kesulitan</label>
                 <select
@@ -681,7 +706,7 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
                   <option value="">-- Pilih Materi --</option>
                   {materi.map((m) => (
                     <option key={m.id_materi} value={m.id_materi}>
-                      {m.nama_materi}
+                    {getMaterialLabel(m)}
                     </option>
                   ))}
                 </select>
@@ -797,8 +822,8 @@ const AdminFileManager = () => {
                 style={{ borderTopColor: "#2563eb", textAlign: "left", width: "100%" }}
                 onClick={() => setSelectedMaterial(item)}>
                 <div className="afm-folder-card-icon" style={{ background: "#eff6ff", color: "#2563eb" }}>▤</div>
-                <div className="afm-folder-card-name">{item.nama_materi}</div>
-                <div className="afm-folder-card-desc">Kelola soal untuk materi ini</div>
+                <div className="afm-folder-card-name">{getMaterialLabel(item)}</div>
+                <div className="afm-folder-card-desc">Kelola soal yang selaras dengan modul ini</div>
                 <div className="afm-folder-card-count" style={{ color: "#2563eb", background: "#eff6ff", borderColor: "#dbeafe" }}>
                   {Number(item.jumlah_soal) || 0} soal
                 </div>
@@ -816,7 +841,7 @@ const AdminFileManager = () => {
       {/* ── Header ── */}
       <div className="adm-card-header" style={{ marginBottom: 24 }}>
         <div>
-          <span className="adm-card-title">Bank Soal · {selectedMaterial.nama_materi}</span>
+          <span className="adm-card-title">Bank Soal · {getMaterialLabel(selectedMaterial)}</span>
           <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
             Kelola bank soal berdasarkan level kesulitan — terstruktur seperti
             folder Soal.
@@ -831,7 +856,7 @@ const AdminFileManager = () => {
       <div className="afm-breadcrumb">
         <span className="afm-bread-root">🏠 Bank Soal</span>
         <span className="afm-bread-sep">/</span>
-        <span>{selectedMaterial.nama_materi}</span>
+        <span>{getMaterialLabel(selectedMaterial)}</span>
         <span className="afm-bread-sep">/</span>
         <span className="afm-bread-current">Pilih Kategori</span>
       </div>

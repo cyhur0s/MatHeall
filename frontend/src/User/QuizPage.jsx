@@ -6,6 +6,7 @@ import { syncCurrentUserProgress } from "../utils/userProgress";
 import { recordQuizCompletion } from "../utils/streak";
 import { formatHeartCountdown, getHeartState, spendHeart } from "../utils/hearts";
 import { recordDailyQuiz } from "../utils/dailyMissions";
+import { QUIZ_CATEGORIES as QUIZ_CATALOG } from "../data/quizCatalog";
 
 // Keep user-facing quiz symbols in one UTF-8-safe source of truth.
 const QUIZ_UI_ICONS = Object.freeze({
@@ -36,27 +37,27 @@ const hasPassedQuiz = (totalQuestions, correctCount) => (
 const QUIZ_MAPPING = {
   "Limit":                        { title: "Limit" },
   "Turunan":                      { title: "Turunan" },
-  "Integral":                     { title: "Integral" },
-  "Matriks":                      { title: "Matriks" },
+  "Integral":                     { title: "Integral Lanjut" },
+  "Matriks":                      { title: "Determinan & Invers Matriks" },
   "Persamaan Linear":             { title: "Persamaan Linear" },
-  "Trigonometri":                 { title: "Trigonometri" },
+  "Trigonometri":                 { title: "Trigonometri Lanjut" },
   "Transformasi Linier":          { title: "Transformasi Linier" },
   "Linier":                       { title: "Transformasi Linier" },
   "Himpunan & Fungsi Komposisi":  { title: "Himpunan & Fungsi Komposisi" },
   "Himpunan":                     { title: "Himpunan & Fungsi Komposisi" },
-  "Boolean & Logika Proposisi":   { title: "Boolean & Logika Proposisi" },
-  "Boolean":                      { title: "Boolean & Logika Proposisi" },
-  "Aljabar Boolean":              { title: "Aljabar Boolean" },
-  "Bilangan Kompleks":            { title: "Bilangan Kompleks" },
+  "Boolean & Logika Proposisi":   { title: "Logika Proposisi & Fungsi Invers" },
+  "Boolean":                      { title: "Logika Proposisi & Fungsi Invers" },
+  "Aljabar Boolean":              { title: "Aljabar Boolean & Peta Karnaugh" },
+  "Bilangan Kompleks":            { title: "Bilangan Kompleks & Koordinat Polar" },
   "Bilangan Biner":               { title: "Bilangan Biner" },
   "Biner":                        { title: "Bilangan Biner" },
-  "Rekursi Linier":               { title: "Rekursi Linier" },
+  "Rekursi Linier":               { title: "Relasi Rekurensi Linier" },
   "Analisis Algoritma":           { title: "Analisis Algoritma" },
   "Geometri Dasar":               { title: "Geometri Dasar" },
   "geometri-dasar":               { title: "Geometri Dasar" },
   "Logika Matematika":            { title: "Logika Matematika" },
   "logika-matematika":            { title: "Logika Matematika" },
-  "Operasi Graf":                 { title: "Operasi Graf" },
+  "Operasi Graf":                 { title: "Operasi Pada Graf" },
 };
 
 const QUIZ_THEMES = [
@@ -95,25 +96,7 @@ const getQuizThemeStyle = (theme) => ({
 });
 
 // Daftar semua quiz (sama seperti di HomePage) — untuk tahu "next level"
-const QUIZ_CATEGORIES = [
-  { key: "Limit",            title: "Limit",                                tingkat: "mudah" },
-  { key: "Turunan",          title: "Turunan",                              tingkat: "mudah" },
-  { key: "Himpunan",         title: "Himpunan & Fungsi Komposisi",          tingkat: "mudah" },
-  { key: "Boolean",          title: "Boolean, Proporsi, & Komposisi Inversi", tingkat: "mudah" },
-  { key: "Aljabar Boolean",  title: "Fungsi Boolean & Peta Karnaugh",       tingkat: "mudah" },
-  { key: "Bilangan Kompleks",title: "Bilangan Kompleks & Koordinat Polar",  tingkat: "mudah" },
-  { key: "Matriks",          title: "Determinan & Invers",                  tingkat: "sedang" },
-  { key: "Transformasi Linier", title: "Transformasi Linier",               tingkat: "sedang" },
-  { key: "Biner",            title: "Bilangan Biner & Aljabar",             tingkat: "sedang" },
-  { key: "Rekursi Linier",   title: "Rekursi Linier",                       tingkat: "sedang" },
-  { key: "Operasi Graf",     title: "Operasi Pada Graf",                    tingkat: "sedang" },
-  { key: "Analisis Algoritma", title: "Analisis Algoritma",                 tingkat: "sedang" },
-  { key: "Integral",         title: "Integral Lanjut",                      tingkat: "sedang" },
-  { key: "Persamaan Linear", title: "Persamaan Linear",                     tingkat: "sulit" },
-  { key: "geometri-dasar",   title: "Geometri Dasar",                       tingkat: "sulit" },
-  { key: "logika-matematika",title: "Logika Matematika",                    tingkat: "sulit" },
-  { key: "Trigonometri",     title: "Trigonometri Tingkat Lanjut",          tingkat: "sulit" },
-];
+const QUIZ_CATEGORIES = QUIZ_CATALOG;
 
 // ── AI CHECK ──────────────────────────────────────────────────────
 async function checkAnswerWithAI({ pertanyaan, proses, jawaban, kunci_jawaban }) {

@@ -304,22 +304,27 @@ app.post("/api/check-answer", async (req, res) => {
   // berbeda, jangan langsung ditolak: AI tetap perlu menilai metode alternatif.
   const deterministic = gradeDeterministically({ jawaban, kunci_jawaban });
 
+  // Bentuk jawaban yang terbukti ekuivalen (mis. 1/4, 0,25, atau
+  // f'(x)=1/4) tidak perlu menunggu AI. Ini menghindari false negative saat
+  // penyedia AI sedang lambat atau tidak tersedia.
+  if (deterministic.decided && deterministic.correct) {
+    return res.json({
+      correct: true,
+      score: deterministic.score,
+      source: deterministic.reason,
+      feedback: "Jawaban akhir setara dengan hasil yang benar. Bentuk penulisan yang berbeda tetap diterima.",
+    });
+  }
+
   const hasGeminiKey = GEMINI_KEY && GEMINI_KEY !== "your_gemini_api_key_here";
 
   if (!hasGeminiKey) {
-    if (deterministic.decided && deterministic.correct) {
-      return res.json({
-        correct: true,
-        score: deterministic.score,
-        source: deterministic.reason,
-        feedback: "Jawaban akhir sesuai dengan kunci referensi. Proses hanya diperiksa kelengkapannya karena layanan AI tidak aktif.",
-      });
-    }
     return res.json({
-      correct: false,
+      correct: null,
       score: 0,
-      source: "offline_fallback",
-      feedback: "Layanan AI belum tersedia untuk memeriksa bentuk jawaban alternatif terhadap kunci referensi.",
+      source: "verification_unavailable",
+      verification: "unavailable",
+      feedback: "Jawaban belum dapat diverifikasi karena layanan penilai sedang tidak tersedia. Jawaban ini tidak dinyatakan salah; coba periksa kembali beberapa saat lagi.",
     });
   }
 
@@ -332,10 +337,11 @@ app.post("/api/check-answer", async (req, res) => {
 
   if (!reply) {
     return res.json({
-      correct: false,
+      correct: null,
       score: 0,
-      source: "ai_unavailable",
-      feedback: "Layanan AI sedang tidak tersedia sehingga jawaban alternatif belum dapat dinyatakan benar.",
+      source: "verification_unavailable",
+      verification: "unavailable",
+      feedback: "Jawaban belum dapat diverifikasi karena layanan penilai sedang tidak tersedia. Jawaban ini tidak dinyatakan salah; coba periksa kembali beberapa saat lagi.",
     });
   }
 
@@ -343,10 +349,11 @@ app.post("/api/check-answer", async (req, res) => {
   if (grade) return res.json({ ...grade, source: "ai_rubric" });
 
   return res.json({
-    correct: false,
+    correct: null,
     score: 0,
     source: "invalid_ai_response",
-    feedback: "Format penilaian AI tidak valid sehingga jawaban belum dapat dinyatakan benar.",
+    verification: "unavailable",
+    feedback: "Penilaian belum dapat diselesaikan karena respons layanan tidak valid. Jawaban ini tidak dinyatakan salah; silakan periksa kembali.",
   });
 });
 

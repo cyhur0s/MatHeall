@@ -2689,6 +2689,12 @@ button { transition: background-color .18s ease, border-color .18s ease, color .
 .quiz-wrong-feedback { margin: 0 20px; color: #6d5b57; font-size: 13px; line-height: 1.6; }
 .quiz-wrong-actions { padding: 16px 20px 20px; }
 .quiz-wrong-next { width: 100%; margin: 0; background: var(--primary); }
+.quiz-verification-pending { border-color: #c9dce8; background: #fff; }
+.quiz-verification-pending .quiz-wrong-header { background: #f0f7fb; border-bottom-color: #d8e7f0; }
+.quiz-verification-pending .quiz-wrong-icon { background: #3976a8; }
+.quiz-verification-pending .quiz-wrong-title { color: #285b85; }
+.quiz-verification-pending .quiz-wrong-sub,
+.quiz-verification-pending .quiz-wrong-feedback { color: #4d687c; }
 .quiz-result-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 120px)); }
 .quiz-kind-label { font-size: 0 !important; }
 .quiz-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 18px 0; }

@@ -22,6 +22,23 @@ if (strpos($rawTingkat, '?') !== false) {
 }
 $tingkat = mysqli_real_escape_string($conn, trim($rawTingkat));
 
+/**
+ * Membandingkan teks pertanyaan tanpa terpengaruh kapital, spasi, atau tanda
+ * baca. Dengan begitu, pertanyaan yang sama tidak dapat muncul lagi hanya
+ * karena format penulisannya sedikit berbeda.
+ */
+function normalizeQuestionText($text) {
+    $text = html_entity_decode(strip_tags((string)$text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+    return preg_replace('/[^\\p{L}\\p{N}]+/u', '', $text) ?? '';
+}
+
+function previousLevels($tingkat) {
+    $order = ['mudah', 'sedang', 'sulit'];
+    $index = array_search(strtolower($tingkat), $order, true);
+    return $index === false ? [] : array_slice($order, 0, $index);
+}
+
 $baseQuery = "SELECT s.id_soal, s.id_materi, s.pertanyaan, s.kunci_jawaban, s.tingkat, s.tipe, s.opsi, m.nama_materi
               FROM ai_soal s
               INNER JOIN ai_materi m ON s.id_materi = m.id_materi";
@@ -49,22 +66,47 @@ if (count($condsWithTingkat) > 0) {
 }
 $queryWithTingkat .= " ORDER BY RAND()";
 
-// Coba query dengan tingkat dulu
+// Ambil hanya soal dari tingkat yang diminta. Jangan pernah menurunkan tingkat
+// secara otomatis karena pengguna harus menerima tantangan baru pada tiap level.
 $res = mysqli_query($conn, $queryWithTingkat);
 
-// Jika tingkat tersebut benar-benar kosong, gunakan seluruh soal materi sebagai fallback.
-if (!$res || mysqli_num_rows($res) === 0) {
-    $queryFallback = $baseQuery;
-    if (count($conditions) > 0) {
-        $queryFallback .= " WHERE " . implode(" AND ", $conditions);
+// Kumpulkan pertanyaan dari tingkat sebelumnya untuk materi yang sama. Ini
+// mencegah data Bank Soal yang terduplikasi masuk kembali ke tingkat berikutnya.
+$previousQuestionKeys = [];
+$levelsBefore = previousLevels($tingkat);
+if (count($levelsBefore) > 0) {
+    $previousConditions = $conditions;
+    $quotedLevels = array_map(fn($level) => "'" . mysqli_real_escape_string($conn, $level) . "'", $levelsBefore);
+    $previousConditions[] = "LOWER(s.tingkat) IN (" . implode(', ', $quotedLevels) . ")";
+    $previousQuery = $baseQuery . " WHERE " . implode(" AND ", $previousConditions);
+    $previousRes = mysqli_query($conn, $previousQuery);
+    if ($previousRes) {
+        while ($previousRow = mysqli_fetch_assoc($previousRes)) {
+            $key = normalizeQuestionText($previousRow['pertanyaan'] ?? '');
+            if ($key !== '') {
+                $previousQuestionKeys[(string)$previousRow['id_materi']][$key] = true;
+            }
+        }
     }
-    $queryFallback .= " ORDER BY RAND()";
-    $res = mysqli_query($conn, $queryFallback);
 }
+
 $data = [];
+$currentQuestionKeys = [];
 
 if ($res && mysqli_num_rows($res) > 0) {
     while ($row = mysqli_fetch_assoc($res)) {
+        $materialId = (string)$row['id_materi'];
+        $questionKey = normalizeQuestionText($row['pertanyaan'] ?? '');
+        if ($questionKey !== '' && (
+            isset($previousQuestionKeys[$materialId][$questionKey]) ||
+            isset($currentQuestionKeys[$materialId][$questionKey])
+        )) {
+            continue;
+        }
+        if ($questionKey !== '') {
+            $currentQuestionKeys[$materialId][$questionKey] = true;
+        }
+
         $opsi_decoded = null;
         if (!empty($row["opsi"])) {
             $decoded = json_decode($row["opsi"], true);
@@ -84,8 +126,9 @@ if ($res && mysqli_num_rows($res) > 0) {
     }
 }
 
-// Setiap akses menghasilkan paket baru berisi tiga tipe yang seimbang.
-// Karena totalnya 10, satu tipe dipilih acak mendapat 4 soal dan dua tipe lain 3 soal.
+// Setiap akses menghasilkan maksimal 10 soal baru dari tingkat yang dipilih.
+// Jika Bank Soal tingkat tersebut belum memiliki 10 pertanyaan unik, tampilkan
+// yang tersedia daripada mengulang soal dari tingkat sebelumnya.
 $types = ["pg", "tf", "esai"];
 shuffle($types);
 $quota = ["pg" => 3, "tf" => 3, "esai" => 3];

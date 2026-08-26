@@ -153,10 +153,11 @@ async function checkAnswerWithAI({ pertanyaan, proses, jawaban, kunci_jawaban })
       (answerNumber !== null && keyNumber !== null && Math.abs(answerNumber - keyNumber) < 0.001)
     );
     return {
-      correct,
+      correct: correct ? true : null,
+      verification: correct ? "verified" : "unavailable",
       feedback: correct
         ? "Jawaban tepat!"
-        : "Jawaban tidak sama dengan kunci dan layanan AI belum tersedia untuk memeriksa bentuk alternatif.",
+        : "Jawaban belum dapat diverifikasi karena layanan penilai tidak tersedia. Jawaban ini tidak dinyatakan salah; silakan periksa kembali.",
     };
   }
 }
@@ -181,6 +182,26 @@ function WrongAnswerPanel({ feedback, correctAnswer, onContinue }) {
       <div className="quiz-wrong-actions">
         <button className="submit-btn quiz-wrong-next" onClick={onContinue}>
           Lanjut ke Soal Berikutnya →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VerificationPendingPanel({ feedback, onRetry }) {
+  return (
+    <div className="quiz-wrong-panel quiz-verification-pending" role="status">
+      <div className="quiz-wrong-header">
+        <span className="quiz-wrong-icon" aria-hidden="true">?</span>
+        <div>
+          <div className="quiz-wrong-title">Jawaban Belum Diverifikasi</div>
+          <div className="quiz-wrong-sub">Jawaban tidak dianggap salah dan belum memengaruhi nilai kuis.</div>
+        </div>
+      </div>
+      <div className="quiz-wrong-feedback">{feedback}</div>
+      <div className="quiz-wrong-actions">
+        <button className="submit-btn quiz-wrong-next" onClick={onRetry}>
+          Periksa Kembali
         </button>
       </div>
     </div>
@@ -358,7 +379,7 @@ function QuizPage() {
   const [proses,  setProses]  = useState("");
   const [jawaban, setJawaban] = useState("");
 
-  // Per-question state machine: "soal" | "checking" | "benar" | "salah"
+  // Per-question state machine: "soal" | "checking" | "benar" | "salah" | "verifikasi"
   const [phase, setPhase]     = useState("soal");
   const [aiFeedback, setAiFeedback] = useState({ feedback: "" });
 
@@ -462,7 +483,9 @@ function QuizPage() {
         };
 
     setAiFeedback(result);
-    if (result.correct) {
+    if (result.verification === "unavailable" || result.correct === null) {
+      setPhase("verifikasi");
+    } else if (result.correct) {
       setScore(prev => prev + 10);
       setPhase("benar");
     } else {
@@ -776,6 +799,14 @@ function QuizPage() {
               feedback={aiFeedback.feedback}
               correctAnswer={q.kunci_jawaban}
               onContinue={() => handleNext(false)}
+            />
+          )}
+
+          {/* ── FASE: PENILAI BELUM TERSEDIA ─────────────────── */}
+          {phase === "verifikasi" && (
+            <VerificationPendingPanel
+              feedback={aiFeedback.feedback}
+              onRetry={handleSubmit}
             />
           )}
 

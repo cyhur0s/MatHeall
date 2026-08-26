@@ -29,6 +29,21 @@ const LEVEL_CONFIG = {
   },
 };
 
+const EMPTY_PG_OPTIONS = ["", "", "", ""];
+
+function parseQuestionOptions(rawOptions) {
+  if (Array.isArray(rawOptions)) return [...rawOptions, ...EMPTY_PG_OPTIONS].slice(0, 4).map((item) => String(item || ""));
+  if (typeof rawOptions === "string" && rawOptions.trim()) {
+    try {
+      const parsed = JSON.parse(rawOptions);
+      if (Array.isArray(parsed)) return [...parsed, ...EMPTY_PG_OPTIONS].slice(0, 4).map((item) => String(item || ""));
+    } catch {
+      // Data opsi lama yang tidak valid ditampilkan sebagai kolom kosong agar dapat diperbaiki admin.
+    }
+  }
+  return [...EMPTY_PG_OPTIONS];
+}
+
 // ─── Sub-komponen: Daftar soal di dalam satu level ──────────────────────────
 const LevelSoalView = ({ tingkat, material, onBack }) => {
   const config = LEVEL_CONFIG[tingkat];
@@ -48,6 +63,8 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
     pertanyaan: "",
     kunci_jawaban: "",
     tingkat: tingkat,
+    tipe: "esai",
+    opsi: [...EMPTY_PG_OPTIONS],
   });
   const [selectedSoal, setSelectedSoal] = useState([]);
   const [expandedMateri, setExpandedMateri] = useState({});
@@ -104,7 +121,7 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
   // ── CRUD Handlers ──────────────────────────────────────────────────────────
   const openAddSoal = (id_materi = material?.id_materi || "") => {
     setEditSoal(null);
-    setSoalForm({ id_materi, pertanyaan: "", kunci_jawaban: "", tingkat });
+    setSoalForm({ id_materi, pertanyaan: "", kunci_jawaban: "", tingkat, tipe: "esai", opsi: [...EMPTY_PG_OPTIONS] });
     setShowModal(true);
   };
 
@@ -115,12 +132,18 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
       pertanyaan: s.pertanyaan,
       kunci_jawaban: s.kunci_jawaban,
       tingkat: s.tingkat || tingkat,
+      tipe: ["pg", "esai", "tf"].includes(s.tipe) ? s.tipe : "esai",
+      opsi: parseQuestionOptions(s.opsi),
     });
     setShowModal(true);
   };
 
   const handleSaveSoal = async (e) => {
     e.preventDefault();
+    if (soalForm.tipe === "pg" && soalForm.opsi.some((option) => !String(option).trim())) {
+      alert("Lengkapi keempat opsi pilihan ganda.");
+      return;
+    }
     const url = editSoal
       ? "update_soal.php"
       : "create_soal.php";
@@ -497,6 +520,35 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
                 </select>
               </div>
               <div className="form-group">
+                <label className="form-label">Tipe Soal</label>
+                <select
+                  className="form-select"
+                  value={soalForm.tipe}
+                  onChange={(e) => {
+                    const tipe = e.target.value;
+                    setSoalForm({
+                      ...soalForm,
+                      tipe,
+                      opsi: tipe === "pg" ? parseQuestionOptions(soalForm.opsi) : [...EMPTY_PG_OPTIONS],
+                      kunci_jawaban: tipe === "pg"
+                        ? (["A", "B", "C", "D"].includes(soalForm.kunci_jawaban) ? soalForm.kunci_jawaban : "A")
+                        : tipe === "tf"
+                          ? (["Benar", "Salah"].includes(soalForm.kunci_jawaban) ? soalForm.kunci_jawaban : "Benar")
+                          : soalForm.kunci_jawaban,
+                    });
+                  }}
+                >
+                  <option value="esai">📝 Esai</option>
+                  <option value="pg">🔘 Pilihan Ganda</option>
+                  <option value="tf">✓✕ Benar / Salah</option>
+                </select>
+                <small style={{ color: "#64748b", display: "block", marginTop: 6 }}>
+                  {soalForm.tipe === "esai" && "Pengguna menulis proses dan jawaban akhir."}
+                  {soalForm.tipe === "pg" && "Isi empat opsi, lalu pilih huruf jawaban yang benar."}
+                  {soalForm.tipe === "tf" && "Tulis satu pernyataan yang dapat dinilai Benar atau Salah."}
+                </small>
+              </div>
+              <div className="form-group">
                 <label className="form-label">Pertanyaan</label>
                 <textarea
                   className="form-input"
@@ -508,20 +560,50 @@ const LevelSoalView = ({ tingkat, material, onBack }) => {
                   }
                 />
               </div>
+              {soalForm.tipe === "pg" && (
+                <div className="form-group">
+                  <label className="form-label">Opsi Jawaban</label>
+                  {soalForm.opsi.map((option, index) => {
+                    const letter = String.fromCharCode(65 + index);
+                    return (
+                      <div key={letter} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <strong style={{ width: 24, color: "#215f6d" }}>{letter}.</strong>
+                        <input
+                          className="form-input"
+                          required
+                          value={option}
+                          placeholder={`Opsi ${letter}`}
+                          onChange={(e) => {
+                            const opsi = [...soalForm.opsi];
+                            opsi[index] = e.target.value;
+                            setSoalForm({ ...soalForm, opsi });
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <div className="form-group">
                 <label className="form-label">Kunci Jawaban</label>
-                <textarea
-                  className="form-input"
-                  required
-                  rows="3"
-                  value={soalForm.kunci_jawaban}
-                  onChange={(e) =>
-                    setSoalForm({
-                      ...soalForm,
-                      kunci_jawaban: e.target.value,
-                    })
-                  }
-                />
+                {soalForm.tipe === "pg" ? (
+                  <select className="form-select" value={soalForm.kunci_jawaban} onChange={(e) => setSoalForm({ ...soalForm, kunci_jawaban: e.target.value })}>
+                    {["A", "B", "C", "D"].map((letter) => <option key={letter} value={letter}>{letter} — {soalForm.opsi[letter.charCodeAt(0) - 65] || `Opsi ${letter}`}</option>)}
+                  </select>
+                ) : soalForm.tipe === "tf" ? (
+                  <select className="form-select" value={soalForm.kunci_jawaban} onChange={(e) => setSoalForm({ ...soalForm, kunci_jawaban: e.target.value })}>
+                    <option value="Benar">Benar</option>
+                    <option value="Salah">Salah</option>
+                  </select>
+                ) : (
+                  <textarea
+                    className="form-input"
+                    required
+                    rows="3"
+                    value={soalForm.kunci_jawaban}
+                    onChange={(e) => setSoalForm({ ...soalForm, kunci_jawaban: e.target.value })}
+                  />
+                )}
               </div>
               <div className="modal-btns">
                 <button

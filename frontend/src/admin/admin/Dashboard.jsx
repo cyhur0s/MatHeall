@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../config/api";
 
 const DASHBOARD_CACHE_KEY = "matheal_admin_dashboard_cache";
-const DASHBOARD_REFRESH_MS = 30_000;
+// Statistik utama (termasuk pengguna baru) harus segera terlihat tanpa
+// membebani API seperti polling setiap detik.
+const DASHBOARD_REFRESH_MS = 10_000;
 const EMPTY_DASHBOARD = {
   stats: { users: 0, materi: 0, soal: 0, videos: 0 },
   activities: [],
@@ -67,7 +69,9 @@ const DashboardSection = ({
         getJson("list_materi_files.php", { data: [], total: 0 }),
         getJson("read_soal.php"),
         getJson("read_video.php"),
-        getJson("dashboard_weekly.php", { activities: 0, types: 0, active_users: 0, quiz_total: 0, material_total: 0, daily: [], recent: [], since: "" }, true),
+        // Aktivitas mingguan adalah pelengkap. Jika endpoint ini sedang gagal,
+        // angka pengguna, materi, soal, dan video tetap harus diperbarui.
+        getJson("dashboard_weekly.php", { activities: 0, types: 0, active_users: 0, quiz_total: 0, material_total: 0, daily: [], recent: [], since: "" }),
       ]);
 
       const nextStats = {
@@ -234,7 +238,7 @@ const DashboardSection = ({
           <div className="adm-dashboard-card-head"><div><span>Kesiapan aplikasi</span><h3>Status sistem</h3></div></div>
           <div className="adm-system-list">
             <div><span><i className="ok"></i>Database aktivitas</span><strong>Aktif</strong></div>
-            <div><span><i className="ok"></i>Sinkronisasi dashboard</span><strong>30 detik</strong></div>
+            <div><span><i className="ok"></i>Sinkronisasi dashboard</span><strong>{DASHBOARD_REFRESH_MS / 1000} detik</strong></div>
             <div><span><i className={contentReady ? "ok" : "warn"}></i>Cakupan bank soal</span><strong>{averageQuestions}/materi</strong></div>
             <div><span><i className="ok"></i>Penyimpanan aktivitas</span><strong>Permanen</strong></div>
           </div>

@@ -70,9 +70,15 @@ const ProfilePage = () => {
         return;
       }
 
-      localStorage.setItem("username", data.user?.username || nextUsername);
+      const confirmedUsername = String(data.user?.username || "").trim();
+      if (!confirmedUsername) {
+        setProfileSaveError("Server belum mengonfirmasi username baru. Perubahan tidak diterapkan pada perangkat ini.");
+        return;
+      }
+
+      localStorage.setItem("username", confirmedUsername);
       localStorage.setItem("avatar", editAvatar);
-      setUsername(data.user?.username || nextUsername);
+      setUsername(confirmedUsername);
       setAvatar(editAvatar);
       setShowEditModal(false);
       syncCurrentUserProgress();
@@ -232,7 +238,17 @@ const ProfilePage = () => {
                 )}
               </div>
             </div>
-            <button className="edit-prof-btn" onClick={() => setShowEditModal(true)}>✏️ Edit Profile</button>
+            <button
+              className="edit-prof-btn"
+              onClick={() => {
+                setEditUsername(username);
+                setEditAvatar(avatar);
+                setProfileSaveError("");
+                setShowEditModal(true);
+              }}
+            >
+              ✏️ Edit Profile
+            </button>
           </div>
 
           {/* STATS */}

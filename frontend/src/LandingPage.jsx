@@ -158,7 +158,7 @@ export default function LandingPage() {
             <p>MatHeal menggabungkan materi terstruktur, kuis interaktif, pemeriksaan AI, dan pencatatan progres dalam satu pengalaman belajar yang terukur.</p>
             <div className="lp-hero-btns">
               <button className="btn-white" onClick={() => navigate("/login")}>Mulai belajar</button>
-              <button className="btn-outline-white" onClick={() => setShowVideoModal(true)}>Lihat video materi</button>
+              <button className="btn-outline-white" onClick={() => setShowVideoModal(true)}>Lihat video tutor</button>
             </div>
           </div>
         </div>

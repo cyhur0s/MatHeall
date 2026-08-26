@@ -29,6 +29,25 @@ if ($id === (int) $actor["id"]) {
     exit;
 }
 
+$targetStmt = mysqli_prepare($conn, "SELECT username, COALESCE(role, 'user') AS role FROM users WHERE id = ? LIMIT 1");
+mysqli_stmt_bind_param($targetStmt, 'i', $id);
+mysqli_stmt_execute($targetStmt);
+$target = mysqli_fetch_assoc(mysqli_stmt_get_result($targetStmt));
+mysqli_stmt_close($targetStmt);
+if (!$target) {
+    http_response_code(404);
+    echo json_encode(["status" => "error", "message" => "Pengguna tidak ditemukan."]);
+    exit;
+}
+if ($target['role'] === 'admin') {
+    $adminCount = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role = 'admin' AND COALESCE(is_active, 1) = 1 AND id <> " . $id);
+    if ((int) (mysqli_fetch_assoc($adminCount)['total'] ?? 0) < 1) {
+        http_response_code(422);
+        echo json_encode(["status" => "error", "message" => "Admin aktif terakhir tidak dapat dihapus."]);
+        exit;
+    }
+}
+
 mysqli_begin_transaction($conn);
 $stmt = mysqli_prepare($conn, "DELETE FROM users WHERE id = ?");
 mysqli_stmt_bind_param($stmt, "i", $id);
@@ -49,6 +68,7 @@ if ($result) {
 }
 
 if ($result) {
+    logActivity($conn, 'admin_user_delete', "Admin '{$actor['username']}' menghapus akun '{$target['username']}'.", (int) $actor['id']);
     echo json_encode([
         "status" => "success",
         "message" => "Data berhasil dihapus"

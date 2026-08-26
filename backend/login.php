@@ -24,13 +24,21 @@ if ($username == "" || $password == "") {
     exit();
 }
 
-$stmt = mysqli_prepare($conn, "SELECT id, username, password, COALESCE(role, 'user') AS role, created_at FROM users WHERE username = ? LIMIT 1");
+$stmt = mysqli_prepare($conn, "SELECT id, username, password, COALESCE(role, 'user') AS role, COALESCE(is_active, 1) AS is_active, created_at FROM users WHERE username = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, "s", $username);
 mysqli_stmt_execute($stmt);
 $user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 mysqli_stmt_close($stmt);
 
 if ($user && password_verify($password, $user["password"])) {
+    if (!(int) $user['is_active']) {
+        http_response_code(403);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Akun ini sedang dinonaktifkan. Hubungi administrator."
+        ]);
+        exit;
+    }
     $auth = issueAuthToken($conn, (int) $user["id"]);
     if ($user["role"] === "admin") {
         logActivity($conn, "admin_login", "Admin '" . $user["username"] . "' masuk ke dashboard.", $user["id"]);

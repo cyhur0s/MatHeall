@@ -76,6 +76,13 @@ if ($activityUserColumn && mysqli_num_rows($activityUserColumn) === 0) {
     mysqli_query($conn, "ALTER TABLE `ai_aktivitas` ADD COLUMN `user_id` int(11) DEFAULT NULL AFTER `id`, ADD KEY `aktivitas_user_id` (`user_id`)");
 }
 
+// Instalasi lama belum selalu memiliki status akun. Migrasi ringan ini membuat
+// fitur aktif/nonaktif tersedia tanpa menghapus atau mengubah data pengguna.
+$userStatusColumn = mysqli_query($conn, "SHOW COLUMNS FROM `users` LIKE 'is_active'");
+if ($userStatusColumn && mysqli_num_rows($userStatusColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE `users` ADD COLUMN `is_active` TINYINT(1) NOT NULL DEFAULT 1 AFTER `role`");
+}
+
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `ai_auth_tokens` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -197,7 +204,7 @@ if (!function_exists('authenticatedUser')) {
         $token = getBearerToken();
         if ($token === '') return null;
         $hash = hash('sha256', $token);
-        $stmt = mysqli_prepare($conn, "SELECT u.id, u.username, COALESCE(u.role, 'user') AS role
+        $stmt = mysqli_prepare($conn, "SELECT u.id, u.username, COALESCE(u.role, 'user') AS role, COALESCE(u.is_active, 1) AS is_active
           FROM ai_auth_tokens t JOIN users u ON u.id = t.user_id
           WHERE t.token_hash = ? AND t.expires_at > NOW() LIMIT 1");
         mysqli_stmt_bind_param($stmt, 's', $hash);
@@ -211,10 +218,13 @@ if (!function_exists('authenticatedUser')) {
 if (!function_exists('requireRole')) {
     function requireRole($conn, $role = null) {
         $user = authenticatedUser($conn);
-        if (!$user || ($role !== null && $user['role'] !== $role)) {
+        if (!$user || !(int) ($user['is_active'] ?? 1) || ($role !== null && $user['role'] !== $role)) {
             http_response_code($user ? 403 : 401);
             header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['status' => 'error', 'message' => $user ? 'Akses ditolak.' : 'Sesi login tidak valid atau telah berakhir.']);
+            $message = !$user
+                ? 'Sesi login tidak valid atau telah berakhir.'
+                : (!(int) ($user['is_active'] ?? 1) ? 'Akun ini sedang dinonaktifkan.' : 'Akses ditolak.');
+            echo json_encode(['status' => 'error', 'message' => $message]);
             exit;
         }
         return $user;

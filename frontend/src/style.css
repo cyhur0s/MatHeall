@@ -9102,6 +9102,13 @@ html, body { overflow-x: clip; }
   transform: translateY(-50%) !important;
 }
 
+/* Status akun pada tabel pengelolaan pengguna admin. */
+.role-badge.role-inactive {
+  border-color: #e5b9b4;
+  background: #fff1f0;
+  color: #a53f35;
+}
+
 /* Landing navigation: tombol sidebar berada di sisi kiri logo pada layar ringkas. */
 .lp-nav-start { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 @media (min-width: 1025px) {

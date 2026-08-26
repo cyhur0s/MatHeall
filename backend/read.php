@@ -12,7 +12,7 @@ include "connection.php";
 requireRole($conn, "admin");
 
 // Gunakan query yang mengambil role juga
-$query = "SELECT id, username, role, created_at FROM users ORDER BY id DESC";
+$query = "SELECT id, username, role, COALESCE(is_active, 1) AS is_active, created_at FROM users ORDER BY id DESC";
 $result = mysqli_query($conn, $query);
 
 $users = [];

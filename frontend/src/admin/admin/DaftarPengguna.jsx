@@ -10,7 +10,7 @@ const UsersSection = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [form, setForm] = useState({ username: "", password: "", role: "user" });
+  const [form, setForm] = useState({ username: "", password: "", role: "user", is_active: true });
 
   const fetchUsers = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -58,7 +58,7 @@ const UsersSection = () => {
     e.preventDefault();
     const url = editUser ? "update.php" : "register.php";
     const body = editUser
-      ? { id: editUser.id, username: form.username, password: form.password, role: form.role }
+      ? { id: editUser.id, username: form.username, password: form.password, role: form.role, is_active: form.is_active }
       : { username: form.username, password: form.password, role: form.role };
     try {
       const response = await apiFetch(url, {
@@ -70,7 +70,7 @@ const UsersSection = () => {
       if (!response.ok || result.status !== "success") throw new Error(result.message || "Data pengguna gagal disimpan.");
       setShowModal(false);
       setEditUser(null);
-      setForm({ username: "", password: "", role: "user" });
+      setForm({ username: "", password: "", role: "user", is_active: true });
       fetchUsers();
     } catch (error) {
       alert(error.message);
@@ -79,13 +79,13 @@ const UsersSection = () => {
 
   const openEdit = (user) => {
     setEditUser(user);
-    setForm({ username: user.username, password: "", role: user.role || "user" });
+    setForm({ username: user.username, password: "", role: user.role || "user", is_active: Number(user.is_active) !== 0 });
     setShowModal(true);
   };
 
   const openAdd = () => {
     setEditUser(null);
-    setForm({ username: "", password: "", role: "user" });
+    setForm({ username: "", password: "", role: "user", is_active: true });
     setShowModal(true);
   };
 
@@ -145,6 +145,8 @@ const UsersSection = () => {
                 <th>#</th>
                 <th>Username</th>
                 <th>Role</th>
+                <th>Status</th>
+                <th>Bergabung</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -157,6 +159,14 @@ const UsersSection = () => {
                     <span className={`role-badge ${u.role === "admin" ? "role-admin" : "role-user"}`}>
                       {u.role === "admin" ? "👑 Admin" : "👤 User"}
                     </span>
+                  </td>
+                  <td>
+                    <span className={`role-badge ${Number(u.is_active) !== 0 ? "role-user" : "role-inactive"}`}>
+                      {Number(u.is_active) !== 0 ? "● Aktif" : "○ Nonaktif"}
+                    </span>
+                  </td>
+                  <td style={{ color: "#64748b", fontSize: 13 }}>
+                    {u.created_at ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "–"}
                   </td>
                   <td>
                     <button className="btn-edit" onClick={() => openEdit(u)}>✏️ Edit</button>
@@ -179,8 +189,9 @@ const UsersSection = () => {
                 <input className="form-input" required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
               </div>
               <div className="form-group">
-                <label className="form-label">{editUser ? "Password baru (opsional)" : "Password"}</label>
+                <label className="form-label">{editUser ? "Reset password (opsional)" : "Password"}</label>
                 <input className="form-input" type="password" required={!editUser} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                {editUser && <small style={{ display: "block", marginTop: 6, color: "#64748b" }}>Password lama tidak dapat dilihat. Isi hanya jika ingin membuat password baru.</small>}
               </div>
               <div className="form-group">
                 <label className="form-label">Role</label>
@@ -189,6 +200,16 @@ const UsersSection = () => {
                   <option value="admin">👑 Admin</option>
                 </select>
               </div>
+              {editUser && (
+                <div className="form-group">
+                  <label className="form-label">Status akun</label>
+                  <select className="form-select" value={form.is_active ? "active" : "inactive"} onChange={(e) => setForm({ ...form, is_active: e.target.value === "active" })}>
+                    <option value="active">● Aktif — dapat login</option>
+                    <option value="inactive">○ Nonaktif — login diblokir</option>
+                  </select>
+                  <small style={{ display: "block", marginTop: 6, color: "#64748b" }}>Gunakan nonaktif untuk membatasi akses tanpa menghapus riwayat akun.</small>
+                </div>
+              )}
               <div className="modal-btns">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
                 <button type="submit" className="btn-save">Simpan</button>
